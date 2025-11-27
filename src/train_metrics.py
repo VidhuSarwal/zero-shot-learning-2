@@ -88,11 +88,11 @@ def load_data():
     return (x_train, x_valid, x_zsl), (y_train, y_valid, y_zsl)
 
 
-def custom_kernel_init(shape):
+def custom_kernel_init(shape, dtype=None):
     class_vectors       = np.load(WORD2VECPATH)
     training_vectors    = sorted([(label, vec) for (label, vec) in class_vectors if label in train_classes], key=lambda x: x[0])
     classnames, vectors = zip(*training_vectors)
-    vectors             = np.asarray(vectors, dtype=np.float)
+    vectors             = np.asarray(vectors, dtype=np.float32 if dtype is None else dtype)
     vectors             = vectors.T
     return vectors
 
@@ -195,11 +195,14 @@ def plot_training_history(history):
 def main():
 
     global train_classes
-    with open('train_classes.txt', 'r') as infile:
+    # Handle both root directory and src directory execution
+    train_classes_path = 'train_classes.txt' if os.path.exists('train_classes.txt') else 'src/train_classes.txt'
+    with open(train_classes_path, 'r') as infile:
         train_classes = [str.strip(line) for line in infile]
 
     global zsl_classes
-    with open('zsl_classes.txt', 'r') as infile:
+    zsl_classes_path = 'zsl_classes.txt' if os.path.exists('zsl_classes.txt') else 'src/zsl_classes.txt'
+    with open(zsl_classes_path, 'r') as infile:
         zsl_classes = [str.strip(line) for line in infile]
 
     global NUM_CLASS, NUM_ATTR, EPOCH, BATCH_SIZE
