@@ -89,10 +89,18 @@ def load_data():
 
 
 def custom_kernel_init(shape, dtype=None):
-    class_vectors       = np.load(WORD2VECPATH)
+    class_vectors       = np.load(WORD2VECPATH, allow_pickle=True)
     training_vectors    = sorted([(label, vec) for (label, vec) in class_vectors if label in train_classes], key=lambda x: x[0])
     classnames, vectors = zip(*training_vectors)
-    vectors             = np.asarray(vectors, dtype=np.float32 if dtype is None else dtype)
+    # Convert TensorFlow dtype to NumPy dtype if needed
+    if dtype is not None:
+        if hasattr(dtype, 'as_numpy_dtype'):
+            dtype = dtype.as_numpy_dtype
+        else:
+            dtype = np.float32
+    else:
+        dtype = np.float32
+    vectors             = np.asarray(vectors, dtype=dtype)
     vectors             = vectors.T
     return vectors
 
@@ -228,7 +236,7 @@ def main():
     save_keras_model(zsl_model, model_path=MODELPATH)
 
     # EVALUATION OF ZERO-SHOT LEARNING PERFORMANCE
-    class_vectors       = sorted(np.load(WORD2VECPATH), key=lambda x: x[0])
+    class_vectors       = sorted(np.load(WORD2VECPATH, allow_pickle=True), key=lambda x: x[0])
     classnames, vectors = zip(*class_vectors)
     classnames          = list(classnames)
     vectors             = np.asarray(vectors, dtype=np.float)
